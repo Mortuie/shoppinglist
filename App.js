@@ -26,14 +26,32 @@ export default class App extends React.Component {
     }
   }
 
+  addItemStorage = async item => {
+    console.log("Trying to add: ", item);
 
-  getItem = async (item) => { 
+    try {
+      const res = await this.getItems();
+
+      console.log("RESULTS!!", res);
+
+
+      // continue here... 
+    } catch (err) {
+      console.log("Error: ", err);
+    }
+  }
+
+  // get all items from the storage...
+  getItems = async () => { 
     try {
       const res = await AsyncStorage.getItem('list');
-
-      console.log("response: ", res);
-
-
+      console.log("Eyy oh, response: ", res);
+      if (!res) { // the storage is empty....
+        await AsyncStorage.setItem('list', JSON.stringify([]));
+        return [];
+      } else { // storage is not empty...
+        return res;
+      }
     } catch (err) {
       console.log("Error: ", err);
     } 
@@ -47,11 +65,11 @@ export default class App extends React.Component {
 
   
   render() {
-
     console.log(this.state);
+    this.addItemStorage("xd");
     return (
       <Container>
-      {this.state.itemList.map(i => <Text>{i}</Text>)}
+        {this.state.itemList.map((i, ind) => <Text key={ind}>{i}</Text>)}
         <TextInput value={this.state.currentItem} placeholder="Another Item" onChange={this.changeItem} />
         <Button title="XDDDD" onPress={this.addItem}/>
       </Container> 
