@@ -10,10 +10,11 @@ export default class App extends React.Component {
   state = {
     currentItem: '',
     itemList: [],
+    items: []
   };
 
   addItem = async () => { 
-    console.log("Trying to add: ", this.state.currentItem);
+    console.log("Trying to add (local): ", this.state.currentItem);
 
 
     if (this.state.currentItem) {
@@ -26,18 +27,27 @@ export default class App extends React.Component {
     }
   }
 
-  addItemStorage = async item => {
-    console.log("Trying to add: ", item);
+  addItemStorage = async () => {
+    console.log("Trying to add (phone): ", this.state.currentItem);
 
     try {
-      const res = await this.getItems();
-
+      
+      const res = await this.getItems()
+      
       console.log("RESULTS!!", res);
 
+      if (this.state.currentItem) { // non falsy item...
+        const newList = res.push(this.state.currentItem);
 
-      // continue here... 
+        await AsyncStorage.setItem('list', JSON.stringify(newList));
+
+        console.log("NEW LIST: ", newList);
+
+      } else {
+        console.log("You're trying to add an empty/falsy item...");
+      }
     } catch (err) {
-      console.log("Error: ", err);
+      console.log(err);
     }
   }
 
@@ -50,10 +60,10 @@ export default class App extends React.Component {
         await AsyncStorage.setItem('list', JSON.stringify([]));
         return [];
       } else { // storage is not empty...
-        return res;
+        return JSON.parse(res);
       }
     } catch (err) {
-      console.log("Error: ", err);
+      console.log("Error 2: ", err);
     } 
   
   }
@@ -63,15 +73,29 @@ export default class App extends React.Component {
     this.setState({ currentItem: item.nativeEvent.text });
   }
 
+  componentDidMount = async () => {
+    //await this.removeItemValue('list');
+    const items = await this.getItems();
+    this.setState({ items })
+  }
   
-  render() {
-    console.log(this.state);
-    this.addItemStorage("xd");
+  async removeItemValue(key) {
+    try {
+            await AsyncStorage.removeItem(key);
+            return true;
+    }
+    catch(exception) {
+            return false;
+    }
+  }
+
+  render() { 
+    console.log("ITEMS: ", this.state.items);
     return (
       <Container>
         {this.state.itemList.map((i, ind) => <Text key={ind}>{i}</Text>)}
         <TextInput value={this.state.currentItem} placeholder="Another Item" onChange={this.changeItem} />
-        <Button title="XDDDD" onPress={this.addItem}/>
+        <Button title="XDDDD" onPress={this.addItemStorage}/>
       </Container> 
     );
   }
